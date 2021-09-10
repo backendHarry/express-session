@@ -3,11 +3,16 @@
 const dotenv = require("dotenv");
 const express = require("express");
 const mongooseConnection = require("./server/database/database");
+const router = require("./server/route/auth-route");
 
 // Config setup
 dotenv.config({ path: "config.env" });
 
 const app = express();
+
+app.use(express.json());
+app.use("/api/auth", router);
+
 // Initial Production Mode
 app.use((req, res, next) => {
   res.status(500).json({
