@@ -2,6 +2,7 @@
 
 const dotenv = require("dotenv");
 const express = require("express");
+const mongooseConnection = require("./server/database/database");
 
 // Config setup
 dotenv.config({ path: "config.env" });
@@ -23,6 +24,8 @@ app.use((err, req, res, next) => {
   next();
 });
 
-app.listen(5000, () =>
-  console.log(`server is running at PORT ${process.env.PORT}`)
-);
+mongooseConnection(() => {
+  app.listen(5000, () =>
+    console.log(`server is running at PORT ${process.env.PORT}`)
+  );
+});
