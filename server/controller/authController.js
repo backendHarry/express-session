@@ -29,10 +29,10 @@ const registerController = async (req, res, next) => {
     data.token = token;
     // Create user
     const userCreated = await User.create(data);
-    res.status(200).json({ userCreated });
+    res.status(201).json({ userCreated });
     // end create user
     console.log(
-      `127.0.0.1:5000/api/auth/verify-account?user_id=${userCreated._id}`
+      `127.0.0.1:5000/api/auth/verify-account?user_id=${userCreated._id}&token=${token}`
     );
     // end token
     // -------End email logic
@@ -44,16 +44,48 @@ const registerController = async (req, res, next) => {
   }
 };
 
-const verifyAccountController = (req, res, next) => {
+const verifyAccountEmailController = async (req, res, next) => {
   try {
-    const userId = req.query.user_id;
-    console.log(userId);
-    res.json({ message: "working" });
-  } catch (err) {}
+    const token = req.query.token;
+    console.log(token);
+    const timeUserClicks = Date.now(); //Time user clicks on the link to be redirected here
+    let user = await User.findOne({ token: token });
+    console.log(user);
+    if (user) {
+      if (await user.hasExpired(timeUserClicks, user)) {
+        return res.status(400).json({
+          message:
+            "Confirmation Token has expired, please request from new route",
+          route: `127.0.0.1:5000/api/auth/resend-token`,
+        });
+      } else {
+        user.verifyEmail = true;
+        user.active = true;
+        user.token = undefined;
+        user.tokenCreatedDate = undefined;
+        await user.save();
+        return res.redirect("home");
+      }
+    } else {
+      return res.status(404).json({
+        message:
+          "Confirmation Token has expired, please request from new route",
+        route: `127.0.0.1:5000/api/auth/resend-token`,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+
+const resendTokenController = (req, res) => {
+  res.send("token ready");
 };
 
 module.exports = {
   homeController,
   registerController,
-  verifyAccountController,
+  verifyAccountEmailController,
+  resendTokenController,
 };

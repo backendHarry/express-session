@@ -53,12 +53,12 @@ const passwordChecker = (password) => {
 };
 
 const uniqueUsernameVal = (err, data) => {
-    return {
-      errors: {
-        username: `username ${data.username} is already taken`,
-      },
-      message: usernameGenerator(data.username),
-    };
+  return {
+    errors: {
+      username: `username ${data.username} is already taken`,
+    },
+    message: usernameGenerator(data.username),
+  };
 };
 
 module.exports = { registerValidation, passwordChecker, uniqueUsernameVal };

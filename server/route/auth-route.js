@@ -2,14 +2,16 @@ const express = require("express");
 const {
   homeController,
   registerController,
-  verifyAccountController,
+  verifyAccountEmailController,
+  resendTokenController
 } = require("../controller/authController");
 
 const router = express.Router();
 
 // GET
 router.get("/home", homeController);
-router.get("/verify-account", verifyAccountController);
+router.get("/verify-account", verifyAccountEmailController);
+router.get('/resend-token', resendTokenController)
 
 // POST
 router.post("/register", registerController);
