@@ -11,6 +11,11 @@ const userSchema = new Schema({
   active: { type: Boolean, default: false },
   admin: { type: Boolean, default: false },
   dateCreated: { type: Date, default: Date.now },
+  token: { type: String },
 });
+
+// userSchema.methods.hasExpired = () => {
+//   const
+// }
 
 module.exports = model("user", userSchema);

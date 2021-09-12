@@ -1,21 +1,59 @@
-const joi = require("joi");
+const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const User = require("../model/user-model"); //User model for DB
-const regValidation = require("../service/registerValidation");
+const {
+  registerValidation,
+  passwordChecker,
+  uniqueUsernameVal,
+} = require("../service/registerValidation");
+
 const homeController = (req, res) => {
   res.json({ message: "hello user welcome to the home route" });
 };
 
-const registerController = (req, res) => {
+const registerController = async (req, res, next) => {
+  let data; //to make available for bth try and catch blocks
   try {
-    const { errors, value } = regValidation(req.body);
-    if (errors) return res.status(400).json({ errors });
-    res.status(200).json({ value });
+    const { errors, value } = registerValidation(req.body); //gets the custom errors or clean data val from the regVal... function
+    if (errors) return res.status(400).json({ errors }); //stops execution and return errors
+    data = { ...value }; //spreading over the clean data to data
+    //// Passsword Strength checker
+    let passwordRes = passwordChecker(data.password);
+    if (passwordRes.errors) return res.status(400).json({ passwordRes });
+    //// ---- end password strenght checker
+    const salt = await bcrypt.genSalt(10);
+    data.password = await bcrypt.hash(value.password, salt); // Hash Password
+    //-------- Send an email to verify user
+    // Token
+    const token = crypto.randomBytes(32).toString("hex");
+    data.token = token;
+    // Create user
+    const userCreated = await User.create(data);
+    res.status(200).json({ userCreated });
+    // end create user
+    console.log(
+      `127.0.0.1:5000/api/auth/verify-account?user_id=${userCreated._id}`
+    );
+    // end token
+    // -------End email logic
   } catch (err) {
+    const errorMsg = uniqueUsernameVal(err, data);
+    if (err.code == 11000) return res.status(400).json(errorMsg);
     console.log(err);
+    next(err);
   }
+};
+
+const verifyAccountController = (req, res, next) => {
+  try {
+    const userId = req.query.user_id;
+    console.log(userId);
+    res.json({ message: "working" });
+  } catch (err) {}
 };
 
 module.exports = {
   homeController,
   registerController,
+  verifyAccountController,
 };
