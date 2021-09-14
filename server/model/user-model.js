@@ -17,7 +17,7 @@ const userSchema = new Schema({
 
 userSchema.methods.hasExpired = async (time, user) => {
   const timeWhenTokenCreated = Date.parse(user.tokenCreatedDate);
-  const limit = 60 * 2000; //limit should be 2mins
+  const limit = 60 * 60 * 2000; //limit should be 2mins
   const difference = time - timeWhenTokenCreated;
   if (difference > limit) {
     user.token = undefined;
