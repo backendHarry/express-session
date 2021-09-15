@@ -6,6 +6,7 @@ const {
   resendTokenController,
   loginController,
 } = require("../controller/authController");
+const loginLimitter = require("../service/login_throttle");
 
 const router = express.Router();
 
@@ -16,6 +17,6 @@ router.get("/resend-token", resendTokenController);
 
 // POST
 router.post("/register", registerController);
-router.post("/login", loginController);
+router.post("/login", loginLimitter, loginController);
 
 module.exports = router;

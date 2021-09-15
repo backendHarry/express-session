@@ -1,12 +1,12 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const passport = require("../service/passport");
 const User = require("../model/user-model"); //User model for DB
 const {
   registerValidation,
   passwordChecker,
   uniqueUsernameVal,
 } = require("../service/registerValidation");
-const passport = require("../service/passport");
 
 const homeController = (req, res) => {
   res.json({ message: "hello user welcome to the home route" });
