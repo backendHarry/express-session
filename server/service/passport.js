@@ -33,12 +33,12 @@ const authHandler = async (username, password, cb) => {
 passport.use(new LocalStrategy(authHandler));
 
 passport.serializeUser((user, cb) => {
-  return cb(null, user.id);
+  cb(null, user.id);
 });
 
 passport.deserializeUser(async (id, cb) => {
   const user = await User.findById(id);
-  return cb(null, user);
+  cb(null, user);
 });
 
 module.exports = passport;

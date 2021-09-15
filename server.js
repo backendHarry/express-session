@@ -3,14 +3,39 @@
 const dotenv = require("dotenv");
 const express = require("express");
 const mongooseConnection = require("./server/database/database");
+const passport = require("./server/service/passport");
 const router = require("./server/route/auth-route");
+const session = require("express-session");
+const store = require("connect-mongo").default;
 
 // Config setup
 dotenv.config({ path: "config.env" });
 
+let sessionStore = store.create({
+  mongoUrl: process.env.MONGO_URI,
+  collection: "session",
+});
+
 const app = express();
 
-app.use(express.json());
+app.use(express.json()); //middleware for body to be in json format
+
+// ########
+// session setup
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    saveUninitialized: false,
+    resave: false,
+    store: sessionStore,
+  })
+);
+// for passport to work with session
+app.use(passport.initialize());
+app.use(passport.session());
+// end
+// ############
+
 app.use("/api/V1/auth", router);
 
 // Initial Production Mode

@@ -102,7 +102,13 @@ const loginController = (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
       if (err) console.log(err);
       if (!user) return res.status(401).json({ info });
-      res.send("login successful");
+      req.logIn(user, (err) => {
+        if (err) {
+          console.log(err);
+          return next(err);
+        }
+      });
+      res.json({ message: "logged in success" });
     })(req, res, next);
   } catch (err) {
     console.log(err);
