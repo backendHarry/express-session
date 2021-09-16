@@ -37,7 +37,6 @@ app.use(passport.session());
 // ############
 
 app.use("/api/V1/auth", router);
-
 // Initial Production Mode
 // app.use((req, res, next) => {
 //   res.status(500).json({

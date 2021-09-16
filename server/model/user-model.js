@@ -13,6 +13,10 @@ const userSchema = new Schema({
   dateCreated: { type: Date, default: Date.now },
   token: { type: String },
   tokenCreatedDate: { type: Date, default: Date.now() },
+  secretQuestion: {
+    question: String,
+    answer: { type: String },
+  },
 });
 
 userSchema.methods.hasExpired = async (time, user) => {
