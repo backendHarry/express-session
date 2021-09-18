@@ -8,6 +8,7 @@ const {
   uniqueUsernameVal,
   passwordResetValidator,
 } = require("../service/registerValidation");
+const EmailHandler = require("../service/email");
 
 const homeController = (req, res) => {
   res.json({ message: "hello user welcome to the home route" });
@@ -38,9 +39,14 @@ const registerController = async (req, res, next) => {
     res.status(201).json({ userCreated });
     // end create user
     // Email sent
-    console.log(
-      `127.0.0.1:5000/api/V1/auth/verify-account?user_id=${userCreated._id}&token=${token}`
-    );
+    const to = data.email;
+    const subject = "Verify Email Account";
+    const text = `Hello ${data.username}, please click on the link to verify your email\n http://127.0.0.1:5000/api/V1/auth/verify-account?user_id=${userCreated._id}&token=${token}
+    `;
+    EmailHandler(to, subject, text);
+    // console.log(
+    //   `127.0.0.1:5000/api/V1/auth/verify-account?user_id=${userCreated._id}&token=${token}`
+    // );
     // end token
     // -------End email logic
   } catch (err) {
@@ -60,11 +66,17 @@ const verifyAccountEmailController = async (req, res, next) => {
     if (user) {
       if (await user.hasExpired(timeUserClicks, user)) {
         //sending this to client, at same time we are sending email for user to click on
-        return res.status(400).json({
-          message:
-            "token expired Confirmation Token has expired, please request from new route",
-          route: `127.0.0.1:5000/api/V1/auth/resend-token?uid=${uid}`,
-        });
+        const to = user.email;
+        const subject = "Email Verification Link expired";
+        const text = `token expired Confirmation Token has expired, please request from new route.\n http://127.0.0.1:5000/api/V1/auth/resend-token?uid=${uid}`;
+        EmailHandler(to, subject, text);
+        res.json({ message: "Email sent, please click to resend a new link" });
+        // return res.status(400).json({
+        //   message:
+        //     "token expired Confirmation Token has expired, please request from new route",
+        //   route: `127.0.0.1:5000/api/V1/auth/resend-token?uid=${uid}`,
+        // });
+        return res;
       } else {
         user.verifyEmail = true;
         user.active = true;
@@ -74,11 +86,16 @@ const verifyAccountEmailController = async (req, res, next) => {
         return res.json({ success: { message: "Email has been verified" } });
       }
     } else {
-      return res.status(400).json({
-        message:
-          "no user Confirmation Token has expired, please request from new route",
-        route: `127.0.0.1:5000/api/V1/auth/resend-token?uid=${uid}`,
-      });
+      // return res.status(400).json({
+      //   message:
+      //     "no user Confirmation Token has expired, please request from new route",
+      //   route: `127.0.0.1:5000/api/V1/auth/resend-token?uid=${uid}`,
+      // });
+      const to = user.email;
+      const subject = "Email Verification Link expired";
+      const text = `token expired Confirmation Token has expired, please request from new route. http://127.0.0.1:5000/api/V1/auth/resend-token?uid=${uid}`;
+      EmailHandler(to, subject, text);
+      res.json({ message: "Email sent, please click to resend a new link" });
     }
   } catch (err) {
     console.log(err);
@@ -95,7 +112,12 @@ const resendTokenController = async (req, res) => {
     const user = await User.findOne({ _id: uid });
     user.token = token;
     await user.save();
-    res.redirect(`verify-account?user_id=${uid}&token=${token}`);
+    const to = user.email;
+    const subject = "Verify Email Account";
+    const text = `Hello ${data.username}, please click on the link to verify your email. http://127.0.0.1:5000/api/V1/auth/verify-account?user_id=${uid}&token=${token}`;
+    Email(to, subject, text);
+    res.json({ message: "Email sent, please click on link to verify email" });
+    // res.redirect(`verify-account?user_id=${uid}&token=${token}`);
   } catch (err) {
     console.log(err);
     next(err);
@@ -202,10 +224,14 @@ const confirmQuestionPostController = async (req, res, next) => {
     } else {
       user.token = token;
       await user.save();
+      const to = user.email;
+      const subject = "Reset password";
+      const text = `Hello ${user.username}, Please click on click to change password. http://127.0.0.1:5000/api/v1/auth/change-password?token=${token}`;
+      EmailHandler(to, subject, text);
       console.log("email sent for user to click on and change password");
-      console.log(
-        `Email sent: 127.0.0.1:5000/api/v1/auth/change-password?token=${token}`
-      );
+      // console.log(
+      //   `Email sent: 127.0.0.1:5000/api/v1/auth/change-password?token=${token}`
+      // );
       return res.json({ message: "confirmed" });
     }
   } catch (err) {
@@ -221,11 +247,16 @@ const updatePasswordEmailController = async (req, res) => {
   if (user) {
     if (await user.hasExpired(timeUserClicks, user)) {
       //sending this to client, at same time we are sending email for user to click on
-      return res.status(400).json({
-        message:
-          "token expired Confirmation Token has expired, please request from new route",
-        route: `127.0.0.1:5000/api/V1/auth/confirm-question?username_email=${user.username}`,
-      });
+      // return res.status(400).json({
+      //   message:
+      //     "token expired Confirmation Token has expired, please request from new route",
+      //   route: `127.0.0.1:5000/api/V1/auth/confirm-question?username_email=${user.username}`,
+      // });
+      const to = user.email;
+      const subject = "Email Verification Link expired";
+      const text = `token expired Confirmation Token has expired, please request from new route. http://127.0.0.1:5000/api/V1/auth/resend-token?uid=${uid}`;
+      EmailHandler(to, subject, text);
+      res.json({ message: "Email sent, please click to resend a new link" });
     } else {
       const { errors, value } = passwordResetValidator(req.body);
       if (errors) return res.status(400).json({ errors }); //Check for JOI Errors

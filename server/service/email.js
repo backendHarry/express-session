@@ -1,10 +1,28 @@
-const crypto = require('crypto');
+const dotenv = require("dotenv");
+const nodemailer = require("nodemailer");
 
+dotenv.config({ path: "config.env" });
 
-const sendingEmail = () => {
-    const token = crypto.randomBytes(32).toString('hex');
-    console.log(`Email:: 127.0.0.1:5000/api/v1/auth/change-password?token=${token}`)
-    return token
-}
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "osagiedeharrison27",
+    pass: process.env.EMAIL_PASS,
+  },
+});
+const EmailHandler = (to, subject, text) => {
+  let options = {
+    from: "osagiedeharrison58@gmail.com",
+    to: to,
+    subject: subject,
+    text: text,
+  };
+  return transporter.sendMail(options, (err, info) => {
+    if (err) console.log(err);
+    else {
+      console.log("Email sent, kindly check email");
+    }
+  });
+};
 
-module.exports = sendingEmail
+module.exports = EmailHandler;
